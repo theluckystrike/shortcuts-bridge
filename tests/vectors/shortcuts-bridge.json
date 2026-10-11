@@ -1,0 +1,2681 @@
+{
+ "slug": "shortcuts-bridge",
+ "module": "shortcuts-bridge/src/shortcut",
+ "function": "evalVector",
+ "note": "args = [fn, args]: fn names an exported function of src/shortcut.ts and args is its argument list, so each case is {name, fn, args, expected}. URL expectations come from Python urllib.parse.quote(s, safe='') (RFC 3986), not from the TypeScript code, and follow Apple's documented Shortcuts URL scheme: shortcuts://run-shortcut?name=&input=text&text= and shortcuts://x-callback-url/run-shortcut with x-success, x-cancel and x-error. A pending request lives 30 minutes (1,800,000 ms) and works once.",
+ "cases": [
+  {
+   "name": "encodeParam: plain word",
+   "fn": "encodeParam",
+   "args": [
+    "Summarise"
+   ],
+   "expected": "Summarise"
+  },
+  {
+   "name": "encodeParam: space becomes %20 not plus",
+   "fn": "encodeParam",
+   "args": [
+    "Daily note summary"
+   ],
+   "expected": "Daily%20note%20summary"
+  },
+  {
+   "name": "encodeParam: ampersand equals and hash",
+   "fn": "encodeParam",
+   "args": [
+    "a&b=c#d"
+   ],
+   "expected": "a%26b%3Dc%23d"
+  },
+  {
+   "name": "encodeParam: question mark slash colon",
+   "fn": "encodeParam",
+   "args": [
+    "what? a/b:c"
+   ],
+   "expected": "what%3F%20a%2Fb%3Ac"
+  },
+  {
+   "name": "encodeParam: RFC 3986 extras ! ' ( ) *",
+   "fn": "encodeParam",
+   "args": [
+    "wow! it's (fine) *bold*"
+   ],
+   "expected": "wow%21%20it%27s%20%28fine%29%20%2Abold%2A"
+  },
+  {
+   "name": "encodeParam: tilde and dot stay",
+   "fn": "encodeParam",
+   "args": [
+    "v1.2~rc-3_x"
+   ],
+   "expected": "v1.2~rc-3_x"
+  },
+  {
+   "name": "encodeParam: percent sign",
+   "fn": "encodeParam",
+   "args": [
+    "100% done"
+   ],
+   "expected": "100%25%20done"
+  },
+  {
+   "name": "encodeParam: plus sign",
+   "fn": "encodeParam",
+   "args": [
+    "1+1=2"
+   ],
+   "expected": "1%2B1%3D2"
+  },
+  {
+   "name": "encodeParam: newline kept as %0A",
+   "fn": "encodeParam",
+   "args": [
+    "line one\nline two"
+   ],
+   "expected": "line%20one%0Aline%20two"
+  },
+  {
+   "name": "encodeParam: windows newline becomes %0A",
+   "fn": "encodeParam",
+   "args": [
+    "a\r\nb"
+   ],
+   "expected": "a%0Ab"
+  },
+  {
+   "name": "encodeParam: old mac newline becomes %0A",
+   "fn": "encodeParam",
+   "args": [
+    "a\rb"
+   ],
+   "expected": "a%0Ab"
+  },
+  {
+   "name": "encodeParam: tab",
+   "fn": "encodeParam",
+   "args": [
+    "a\tb"
+   ],
+   "expected": "a%09b"
+  },
+  {
+   "name": "encodeParam: polish letters",
+   "fn": "encodeParam",
+   "args": [
+    "Zażółć gęślą jaźń"
+   ],
+   "expected": "Za%C5%BC%C3%B3%C5%82%C4%87%20g%C4%99%C5%9Bl%C4%85%20ja%C5%BA%C5%84"
+  },
+  {
+   "name": "encodeParam: emoji",
+   "fn": "encodeParam",
+   "args": [
+    "ok 😀 done"
+   ],
+   "expected": "ok%20%F0%9F%98%80%20done"
+  },
+  {
+   "name": "encodeParam: japanese",
+   "fn": "encodeParam",
+   "args": [
+    "メモ"
+   ],
+   "expected": "%E3%83%A1%E3%83%A2"
+  },
+  {
+   "name": "encodeParam: obsidian link brackets",
+   "fn": "encodeParam",
+   "args": [
+    "[[Note#Heading|alias]]"
+   ],
+   "expected": "%5B%5BNote%23Heading%7Calias%5D%5D"
+  },
+  {
+   "name": "encodeParam: markdown code fence",
+   "fn": "encodeParam",
+   "args": [
+    "```js\nlet a = 1;\n```"
+   ],
+   "expected": "%60%60%60js%0Alet%20a%20%3D%201%3B%0A%60%60%60"
+  },
+  {
+   "name": "encodeParam: empty string",
+   "fn": "encodeParam",
+   "args": [
+    ""
+   ],
+   "expected": ""
+  },
+  {
+   "name": "encodeParam: angle brackets and quotes",
+   "fn": "encodeParam",
+   "args": [
+    "<a href=\"x\">y</a>"
+   ],
+   "expected": "%3Ca%20href%3D%22x%22%3Ey%3C%2Fa%3E"
+  },
+  {
+   "name": "encodeParam: unicode line separator",
+   "fn": "encodeParam",
+   "args": [
+    "a b"
+   ],
+   "expected": "a%E2%80%A8b"
+  },
+  {
+   "name": "encodeParam: valid pair stays one emoji",
+   "fn": "encodeParam",
+   "args": [
+    "😀"
+   ],
+   "expected": "%F0%9F%98%80"
+  },
+  {
+   "name": "nameProblem: empty",
+   "fn": "nameProblem",
+   "args": [
+    ""
+   ],
+   "expected": "The shortcut name is empty."
+  },
+  {
+   "name": "nameProblem: spaces only",
+   "fn": "nameProblem",
+   "args": [
+    "   "
+   ],
+   "expected": "The shortcut name is empty."
+  },
+  {
+   "name": "nameProblem: plain",
+   "fn": "nameProblem",
+   "args": [
+    "Summarise"
+   ],
+   "expected": null
+  },
+  {
+   "name": "nameProblem: with spaces and symbols",
+   "fn": "nameProblem",
+   "args": [
+    " Add to Reminders (work) "
+   ],
+   "expected": null
+  },
+  {
+   "name": "nameProblem: control character",
+   "fn": "nameProblem",
+   "args": [
+    "a\u0007b"
+   ],
+   "expected": "The shortcut name has a control character."
+  },
+  {
+   "name": "nameProblem: newline",
+   "fn": "nameProblem",
+   "args": [
+    "a\nb"
+   ],
+   "expected": "The shortcut name has a control character."
+  },
+  {
+   "name": "nameProblem: 200 characters ok",
+   "fn": "nameProblem",
+   "args": [
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   ],
+   "expected": null
+  },
+  {
+   "name": "nameProblem: 201 characters too long",
+   "fn": "nameProblem",
+   "args": [
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   ],
+   "expected": "The shortcut name is longer than 200 characters."
+  },
+  {
+   "name": "callbackUrls: simple vault",
+   "fn": "callbackUrls",
+   "args": [
+    "Notes",
+    "abc12345"
+   ],
+   "expected": {
+    "success": "obsidian://shortcuts-bridge?vault=Notes&id=abc12345&status=success",
+    "cancel": "obsidian://shortcuts-bridge?vault=Notes&id=abc12345&status=cancel",
+    "error": "obsidian://shortcuts-bridge?vault=Notes&id=abc12345&status=error"
+   }
+  },
+  {
+   "name": "callbackUrls: vault with spaces",
+   "fn": "callbackUrls",
+   "args": [
+    "My Vault",
+    "k3j9x0q2m1"
+   ],
+   "expected": {
+    "success": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=success",
+    "cancel": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=cancel",
+    "error": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=error"
+   }
+  },
+  {
+   "name": "callbackUrls: vault with ampersand and unicode",
+   "fn": "callbackUrls",
+   "args": [
+    "R&D Zażółć",
+    "k3j9x0q2m1"
+   ],
+   "expected": {
+    "success": "obsidian://shortcuts-bridge?vault=R%26D%20Za%C5%BC%C3%B3%C5%82%C4%87&id=k3j9x0q2m1&status=success",
+    "cancel": "obsidian://shortcuts-bridge?vault=R%26D%20Za%C5%BC%C3%B3%C5%82%C4%87&id=k3j9x0q2m1&status=cancel",
+    "error": "obsidian://shortcuts-bridge?vault=R%26D%20Za%C5%BC%C3%B3%C5%82%C4%87&id=k3j9x0q2m1&status=error"
+   }
+  },
+  {
+   "name": "buildRunUrl: name only",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "Summarise",
+     "input": "none"
+    }
+   ],
+   "expected": "shortcuts://run-shortcut?name=Summarise"
+  },
+  {
+   "name": "buildRunUrl: name with spaces and trim",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "  Add to Reminders ",
+     "input": "none"
+    }
+   ],
+   "expected": "shortcuts://run-shortcut?name=Add%20to%20Reminders"
+  },
+  {
+   "name": "buildRunUrl: text input",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "Summarise",
+     "input": "text",
+     "text": "Hello, world!"
+    }
+   ],
+   "expected": "shortcuts://run-shortcut?name=Summarise&input=text&text=Hello%2C%20world%21"
+  },
+  {
+   "name": "buildRunUrl: multi line markdown text",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "Clean",
+     "input": "text",
+     "text": "# Title\n\n- [ ] a & b\n- [x] c=d\n"
+    }
+   ],
+   "expected": "shortcuts://run-shortcut?name=Clean&input=text&text=%23%20Title%0A%0A-%20%5B%20%5D%20a%20%26%20b%0A-%20%5Bx%5D%20c%3Dd%0A"
+  },
+  {
+   "name": "buildRunUrl: clipboard input",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "Paste it",
+     "input": "clipboard"
+    }
+   ],
+   "expected": "shortcuts://run-shortcut?name=Paste%20it&input=clipboard"
+  },
+  {
+   "name": "buildRunUrl: none input ignores text",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "X",
+     "input": "none",
+     "text": "ignored"
+    }
+   ],
+   "expected": "shortcuts://run-shortcut?name=X"
+  },
+  {
+   "name": "buildRunUrl: text input with no text sends empty text",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "X",
+     "input": "text"
+    }
+   ],
+   "expected": "shortcuts://run-shortcut?name=X&input=text&text="
+  },
+  {
+   "name": "buildRunUrl: polish name and text",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "Streść",
+     "input": "text",
+     "text": "Zażółć gęślą jaźń"
+    }
+   ],
+   "expected": "shortcuts://run-shortcut?name=Stre%C5%9B%C4%87&input=text&text=Za%C5%BC%C3%B3%C5%82%C4%87%20g%C4%99%C5%9Bl%C4%85%20ja%C5%BA%C5%84"
+  },
+  {
+   "name": "buildRunUrl: x-callback form with text",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "Summarise",
+     "input": "text",
+     "text": "Hello",
+     "callback": {
+      "success": "obsidian://shortcuts-bridge?vault=Notes&id=abc12345&status=success",
+      "cancel": "obsidian://shortcuts-bridge?vault=Notes&id=abc12345&status=cancel",
+      "error": "obsidian://shortcuts-bridge?vault=Notes&id=abc12345&status=error"
+     }
+    }
+   ],
+   "expected": "shortcuts://x-callback-url/run-shortcut?name=Summarise&input=text&text=Hello&x-success=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DNotes%26id%3Dabc12345%26status%3Dsuccess&x-cancel=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DNotes%26id%3Dabc12345%26status%3Dcancel&x-error=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DNotes%26id%3Dabc12345%26status%3Derror"
+  },
+  {
+   "name": "buildRunUrl: x-callback form with note path input",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "Tag it",
+     "input": "text",
+     "text": "Projects/Plan.md",
+     "callback": {
+      "success": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=success",
+      "cancel": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=cancel",
+      "error": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=error"
+     }
+    }
+   ],
+   "expected": "shortcuts://x-callback-url/run-shortcut?name=Tag%20it&input=text&text=Projects%2FPlan.md&x-success=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DMy%2520Vault%26id%3Dk3j9x0q2m1%26status%3Dsuccess&x-cancel=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DMy%2520Vault%26id%3Dk3j9x0q2m1%26status%3Dcancel&x-error=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DMy%2520Vault%26id%3Dk3j9x0q2m1%26status%3Derror"
+  },
+  {
+   "name": "buildRunUrl: x-callback form with clipboard",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "Tag it",
+     "input": "clipboard",
+     "callback": {
+      "success": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=success",
+      "cancel": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=cancel",
+      "error": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=error"
+     }
+    }
+   ],
+   "expected": "shortcuts://x-callback-url/run-shortcut?name=Tag%20it&input=clipboard&x-success=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DMy%2520Vault%26id%3Dk3j9x0q2m1%26status%3Dsuccess&x-cancel=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DMy%2520Vault%26id%3Dk3j9x0q2m1%26status%3Dcancel&x-error=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DMy%2520Vault%26id%3Dk3j9x0q2m1%26status%3Derror"
+  },
+  {
+   "name": "buildRunUrl: x-callback form with no input",
+   "fn": "buildRunUrl",
+   "args": [
+    {
+     "name": "Tag it",
+     "input": "none",
+     "callback": {
+      "success": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=success",
+      "cancel": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=cancel",
+      "error": "obsidian://shortcuts-bridge?vault=My%20Vault&id=k3j9x0q2m1&status=error"
+     }
+    }
+   ],
+   "expected": "shortcuts://x-callback-url/run-shortcut?name=Tag%20it&x-success=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DMy%2520Vault%26id%3Dk3j9x0q2m1%26status%3Dsuccess&x-cancel=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DMy%2520Vault%26id%3Dk3j9x0q2m1%26status%3Dcancel&x-error=obsidian%3A%2F%2Fshortcuts-bridge%3Fvault%3DMy%2520Vault%26id%3Dk3j9x0q2m1%26status%3Derror"
+  },
+  {
+   "name": "chooseInput: selection present",
+   "fn": "chooseInput",
+   "args": [
+    "selection",
+    {
+     "selection": "chosen words",
+     "line": "whole line",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "text",
+    "text": "chosen words"
+   }
+  },
+  {
+   "name": "chooseInput: selection empty falls back to the line",
+   "fn": "chooseInput",
+   "args": [
+    "selection",
+    {
+     "selection": "",
+     "line": "whole line",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "text",
+    "text": "whole line"
+   }
+  },
+  {
+   "name": "chooseInput: spaces-only selection falls back to the line",
+   "fn": "chooseInput",
+   "args": [
+    "selection",
+    {
+     "selection": "  \n ",
+     "line": "whole line",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "text",
+    "text": "whole line"
+   }
+  },
+  {
+   "name": "chooseInput: selection and line empty",
+   "fn": "chooseInput",
+   "args": [
+    "selection",
+    {
+     "selection": "",
+     "line": "",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "empty",
+    "reason": "Nothing is selected and the current line is empty."
+   }
+  },
+  {
+   "name": "chooseInput: line",
+   "fn": "chooseInput",
+   "args": [
+    "line",
+    {
+     "selection": "",
+     "line": "a line",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "text",
+    "text": "a line"
+   }
+  },
+  {
+   "name": "chooseInput: empty line",
+   "fn": "chooseInput",
+   "args": [
+    "line",
+    {
+     "selection": "",
+     "line": "   ",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "empty",
+    "reason": "The current line is empty."
+   }
+  },
+  {
+   "name": "chooseInput: note",
+   "fn": "chooseInput",
+   "args": [
+    "note",
+    {
+     "selection": "",
+     "line": "",
+     "note": "# A\n\nbody",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "text",
+    "text": "# A\n\nbody"
+   }
+  },
+  {
+   "name": "chooseInput: empty note",
+   "fn": "chooseInput",
+   "args": [
+    "note",
+    {
+     "selection": "",
+     "line": "",
+     "note": "\n",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "empty",
+    "reason": "The note is empty."
+   }
+  },
+  {
+   "name": "chooseInput: title",
+   "fn": "chooseInput",
+   "args": [
+    "title",
+    {
+     "selection": "",
+     "line": "",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "text",
+    "text": "Plan"
+   }
+  },
+  {
+   "name": "chooseInput: path",
+   "fn": "chooseInput",
+   "args": [
+    "path",
+    {
+     "selection": "",
+     "line": "",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "text",
+    "text": "Projects/Plan.md"
+   }
+  },
+  {
+   "name": "chooseInput: clipboard",
+   "fn": "chooseInput",
+   "args": [
+    "clipboard",
+    {
+     "selection": "x",
+     "line": "",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "clipboard"
+   }
+  },
+  {
+   "name": "chooseInput: none",
+   "fn": "chooseInput",
+   "args": [
+    "none",
+    {
+     "selection": "x",
+     "line": "",
+     "note": "",
+     "title": "Plan",
+     "path": "Projects/Plan.md"
+    }
+   ],
+   "expected": {
+    "mode": "none"
+   }
+  },
+  {
+   "name": "lengthProblem: under limit",
+   "fn": "lengthProblem",
+   "args": [
+    "abc",
+    5
+   ],
+   "expected": null
+  },
+  {
+   "name": "lengthProblem: exactly the limit",
+   "fn": "lengthProblem",
+   "args": [
+    "abcde",
+    5
+   ],
+   "expected": null
+  },
+  {
+   "name": "lengthProblem: over limit",
+   "fn": "lengthProblem",
+   "args": [
+    "abcdef",
+    5
+   ],
+   "expected": "The text has 6 characters. The limit is 5. Select less text or raise the limit in the settings."
+  },
+  {
+   "name": "parseFavourites: name only gets defaults",
+   "fn": "parseFavourites",
+   "args": [
+    "Summarise"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "Summarise",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFavourites: all four fields",
+   "fn": "parseFavourites",
+   "args": [
+    "Translate | note | property:translation | Translate this note"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "Translate",
+      "input": "note",
+      "output": "property:translation",
+      "label": "Translate this note"
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFavourites: blank lines and comments skipped",
+   "fn": "parseFavourites",
+   "args": [
+    "# my list\n\nA | title\n   \n# x\nB | path | append"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "A",
+      "input": "title",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "name": "B",
+      "input": "path",
+      "output": "append",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFavourites: words are case insensitive",
+   "fn": "parseFavourites",
+   "args": [
+    "A | NOTE | Cursor"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "A",
+      "input": "note",
+      "output": "cursor",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFavourites: windows line breaks",
+   "fn": "parseFavourites",
+   "args": [
+    "A | line\r\nB | none\r\n"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "A",
+      "input": "line",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "name": "B",
+      "input": "none",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFavourites: empty input field uses selection",
+   "fn": "parseFavourites",
+   "args": [
+    "A |  | replace"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "A",
+      "input": "selection",
+      "output": "replace",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFavourites: unknown input is a problem with the line number",
+   "fn": "parseFavourites",
+   "args": [
+    "A | note\nB | page"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "A",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "problems": [
+     "Line 2: unknown input \"page\". Use selection, line, note, title, path, clipboard, none."
+    ]
+   }
+  },
+  {
+   "name": "parseFavourites: unknown output is a problem",
+   "fn": "parseFavourites",
+   "args": [
+    "A | note | clipboard"
+   ],
+   "expected": {
+    "items": [],
+    "problems": [
+     "Line 1: unknown output \"clipboard\". Use none, cursor, replace, append or property:<name>."
+    ]
+   }
+  },
+  {
+   "name": "parseFavourites: property with no key is a problem",
+   "fn": "parseFavourites",
+   "args": [
+    "A | note | property:"
+   ],
+   "expected": {
+    "items": [],
+    "problems": [
+     "Line 1: unknown output \"property:\". Use none, cursor, replace, append or property:<name>."
+    ]
+   }
+  },
+  {
+   "name": "parseFavourites: empty name is a problem",
+   "fn": "parseFavourites",
+   "args": [
+    " | note"
+   ],
+   "expected": {
+    "items": [],
+    "problems": [
+     "Line 1: The shortcut name is empty."
+    ]
+   }
+  },
+  {
+   "name": "parseFavourites: five fields is a problem",
+   "fn": "parseFavourites",
+   "args": [
+    "A | note | none | label | extra"
+   ],
+   "expected": {
+    "items": [],
+    "problems": [
+     "Line 1: more than 4 fields. Do not use \"|\" inside a name."
+    ]
+   }
+  },
+  {
+   "name": "parseFavourites: property key keeps spaces inside",
+   "fn": "parseFavourites",
+   "args": [
+    "A | note | property: my summary "
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "A",
+      "input": "note",
+      "output": "property:my summary",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFavourites: empty text",
+   "fn": "parseFavourites",
+   "args": [
+    ""
+   ],
+   "expected": {
+    "items": [],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFolderRules: one rule",
+   "fn": "parseFolderRules",
+   "args": [
+    "Projects | Summarise | note | property:summary"
+   ],
+   "expected": {
+    "items": [
+     {
+      "folder": "Projects",
+      "name": "Summarise",
+      "input": "note",
+      "output": "property:summary",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFolderRules: slashes are trimmed",
+   "fn": "parseFolderRules",
+   "args": [
+    "/Projects/Work/ | Tag"
+   ],
+   "expected": {
+    "items": [
+     {
+      "folder": "Projects/Work",
+      "name": "Tag",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFolderRules: slash means whole vault",
+   "fn": "parseFolderRules",
+   "args": [
+    "/ | Save | title"
+   ],
+   "expected": {
+    "items": [
+     {
+      "folder": "",
+      "name": "Save",
+      "input": "title",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFolderRules: backslashes become slashes",
+   "fn": "parseFolderRules",
+   "args": [
+    "Projects\\Work | Tag"
+   ],
+   "expected": {
+    "items": [
+     {
+      "folder": "Projects/Work",
+      "name": "Tag",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFolderRules: one field is a problem",
+   "fn": "parseFolderRules",
+   "args": [
+    "Projects"
+   ],
+   "expected": {
+    "items": [],
+    "problems": [
+     "Line 1: write Folder | Shortcut name | input | output (2 to 5 fields)."
+    ]
+   }
+  },
+  {
+   "name": "parseFolderRules: bad input in a rule",
+   "fn": "parseFolderRules",
+   "args": [
+    "Projects | Tag | everything"
+   ],
+   "expected": {
+    "items": [],
+    "problems": [
+     "Line 1: unknown input \"everything\". Use selection, line, note, title, path, clipboard, none."
+    ]
+   }
+  },
+  {
+   "name": "matchFolderRule: longest folder wins",
+   "fn": "matchFolderRule",
+   "args": [
+    [
+     {
+      "folder": "",
+      "name": "Root",
+      "input": "title",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects",
+      "name": "Proj",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects/Work",
+      "name": "Work",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "Projects/Work/Plan.md"
+   ],
+   "expected": {
+    "folder": "Projects/Work",
+    "name": "Work",
+    "input": "note",
+    "output": "none",
+    "label": ""
+   }
+  },
+  {
+   "name": "matchFolderRule: parent folder",
+   "fn": "matchFolderRule",
+   "args": [
+    [
+     {
+      "folder": "",
+      "name": "Root",
+      "input": "title",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects",
+      "name": "Proj",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects/Work",
+      "name": "Work",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "Projects/Plan.md"
+   ],
+   "expected": {
+    "folder": "Projects",
+    "name": "Proj",
+    "input": "note",
+    "output": "none",
+    "label": ""
+   }
+  },
+  {
+   "name": "matchFolderRule: deep subfolder uses nearest rule",
+   "fn": "matchFolderRule",
+   "args": [
+    [
+     {
+      "folder": "",
+      "name": "Root",
+      "input": "title",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects",
+      "name": "Proj",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects/Work",
+      "name": "Work",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "Projects/Work/2026/Q4/Plan.md"
+   ],
+   "expected": {
+    "folder": "Projects/Work",
+    "name": "Work",
+    "input": "note",
+    "output": "none",
+    "label": ""
+   }
+  },
+  {
+   "name": "matchFolderRule: similar folder name does not match",
+   "fn": "matchFolderRule",
+   "args": [
+    [
+     {
+      "folder": "",
+      "name": "Root",
+      "input": "title",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects",
+      "name": "Proj",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects/Work",
+      "name": "Work",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "Projects2/Plan.md"
+   ],
+   "expected": {
+    "folder": "",
+    "name": "Root",
+    "input": "title",
+    "output": "none",
+    "label": ""
+   }
+  },
+  {
+   "name": "matchFolderRule: root note uses the whole vault rule",
+   "fn": "matchFolderRule",
+   "args": [
+    [
+     {
+      "folder": "",
+      "name": "Root",
+      "input": "title",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects",
+      "name": "Proj",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects/Work",
+      "name": "Work",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "Inbox.md"
+   ],
+   "expected": {
+    "folder": "",
+    "name": "Root",
+    "input": "title",
+    "output": "none",
+    "label": ""
+   }
+  },
+  {
+   "name": "matchFolderRule: folder name as prefix of a file does not match",
+   "fn": "matchFolderRule",
+   "args": [
+    [
+     {
+      "folder": "",
+      "name": "Root",
+      "input": "title",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects",
+      "name": "Proj",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects/Work",
+      "name": "Work",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "Projects.md"
+   ],
+   "expected": {
+    "folder": "",
+    "name": "Root",
+    "input": "title",
+    "output": "none",
+    "label": ""
+   }
+  },
+  {
+   "name": "matchFolderRule: no rules",
+   "fn": "matchFolderRule",
+   "args": [
+    [],
+    "a.md"
+   ],
+   "expected": null
+  },
+  {
+   "name": "matchFolderRule: no match without a whole vault rule",
+   "fn": "matchFolderRule",
+   "args": [
+    [
+     {
+      "folder": "Projects",
+      "name": "Proj",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects/Work",
+      "name": "Work",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "Inbox.md"
+   ],
+   "expected": null
+  },
+  {
+   "name": "matchFolderRule: first of equal folders wins",
+   "fn": "matchFolderRule",
+   "args": [
+    [
+     {
+      "folder": "Projects",
+      "name": "First",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "folder": "Projects",
+      "name": "Second",
+      "input": "note",
+      "output": "none",
+      "label": ""
+     }
+    ],
+    "Projects/a.md"
+   ],
+   "expected": {
+    "folder": "Projects",
+    "name": "First",
+    "input": "note",
+    "output": "none",
+    "label": ""
+   }
+  },
+  {
+   "name": "parseBlock: name only",
+   "fn": "parseBlock",
+   "args": [
+    "Summarise"
+   ],
+   "expected": {
+    "ok": true,
+    "favourite": {
+     "name": "Summarise",
+     "input": "note",
+     "output": "none",
+     "label": ""
+    }
+   }
+  },
+  {
+   "name": "parseBlock: name with trailing newline",
+   "fn": "parseBlock",
+   "args": [
+    "Summarise\n"
+   ],
+   "expected": {
+    "ok": true,
+    "favourite": {
+     "name": "Summarise",
+     "input": "note",
+     "output": "none",
+     "label": ""
+    }
+   }
+  },
+  {
+   "name": "parseBlock: all keys",
+   "fn": "parseBlock",
+   "args": [
+    "Summarise\ninput: title\noutput: property:summary\nlabel: Summarise now"
+   ],
+   "expected": {
+    "ok": true,
+    "favourite": {
+     "name": "Summarise",
+     "input": "title",
+     "output": "property:summary",
+     "label": "Summarise now"
+    }
+   }
+  },
+  {
+   "name": "parseBlock: name key",
+   "fn": "parseBlock",
+   "args": [
+    "name: Add to Reminders\ninput: path"
+   ],
+   "expected": {
+    "ok": true,
+    "favourite": {
+     "name": "Add to Reminders",
+     "input": "path",
+     "output": "none",
+     "label": ""
+    }
+   }
+  },
+  {
+   "name": "parseBlock: keys before the name",
+   "fn": "parseBlock",
+   "args": [
+    "output: append\n\nTag it"
+   ],
+   "expected": {
+    "ok": true,
+    "favourite": {
+     "name": "Tag it",
+     "input": "note",
+     "output": "append",
+     "label": ""
+    }
+   }
+  },
+  {
+   "name": "parseBlock: empty block",
+   "fn": "parseBlock",
+   "args": [
+    "\n  \n"
+   ],
+   "expected": {
+    "ok": false,
+    "error": "The shortcut name is empty."
+   }
+  },
+  {
+   "name": "parseBlock: selection input is refused",
+   "fn": "parseBlock",
+   "args": [
+    "Tag it\ninput: selection"
+   ],
+   "expected": {
+    "ok": false,
+    "error": "A button has no selection. Use input: note, title, path, clipboard or none."
+   }
+  },
+  {
+   "name": "parseBlock: line input is refused",
+   "fn": "parseBlock",
+   "args": [
+    "Tag it\ninput: line"
+   ],
+   "expected": {
+    "ok": false,
+    "error": "A button has no selection. Use input: note, title, path, clipboard or none."
+   }
+  },
+  {
+   "name": "parseBlock: unknown input",
+   "fn": "parseBlock",
+   "args": [
+    "Tag it\ninput: all"
+   ],
+   "expected": {
+    "ok": false,
+    "error": "Unknown input \"all\". Use note, title, path, clipboard or none."
+   }
+  },
+  {
+   "name": "parseBlock: unknown output",
+   "fn": "parseBlock",
+   "args": [
+    "Tag it\noutput: clipboard"
+   ],
+   "expected": {
+    "ok": false,
+    "error": "Unknown output \"clipboard\". Use none, cursor, replace, append or property:<name>."
+   }
+  },
+  {
+   "name": "parseBlock: colon in a name that is not a key",
+   "fn": "parseBlock",
+   "args": [
+    "Send: to Bob"
+   ],
+   "expected": {
+    "ok": true,
+    "favourite": {
+     "name": "Send: to Bob",
+     "input": "note",
+     "output": "none",
+     "label": ""
+    }
+   }
+  },
+  {
+   "name": "parseCallback: success with result",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "action": "shortcuts-bridge",
+     "vault": "Notes",
+     "id": "abc12345",
+     "status": "success",
+     "result": "Done 42"
+    }
+   ],
+   "expected": {
+    "kind": "success",
+    "id": "abc12345",
+    "result": "Done 42"
+   }
+  },
+  {
+   "name": "parseCallback: success without result",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "action": "shortcuts-bridge",
+     "id": "abc12345",
+     "status": "success"
+    }
+   ],
+   "expected": {
+    "kind": "success",
+    "id": "abc12345",
+    "result": null
+   }
+  },
+  {
+   "name": "parseCallback: success with empty result",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "abc12345",
+     "status": "success",
+     "result": ""
+    }
+   ],
+   "expected": {
+    "kind": "success",
+    "id": "abc12345",
+    "result": ""
+   }
+  },
+  {
+   "name": "parseCallback: multi line result is kept exact",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "abc12345",
+     "status": "success",
+     "result": "a\nb\n"
+    }
+   ],
+   "expected": {
+    "kind": "success",
+    "id": "abc12345",
+    "result": "a\nb\n"
+   }
+  },
+  {
+   "name": "parseCallback: cancel",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "abc12345",
+     "status": "cancel"
+    }
+   ],
+   "expected": {
+    "kind": "cancel",
+    "id": "abc12345"
+   }
+  },
+  {
+   "name": "parseCallback: error with errorMessage",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "abc12345",
+     "status": "error",
+     "errorMessage": " Could not run "
+    }
+   ],
+   "expected": {
+    "kind": "error",
+    "id": "abc12345",
+    "message": "Could not run"
+   }
+  },
+  {
+   "name": "parseCallback: error with error key",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "abc12345",
+     "status": "error",
+     "error": "boom"
+    }
+   ],
+   "expected": {
+    "kind": "error",
+    "id": "abc12345",
+    "message": "boom"
+   }
+  },
+  {
+   "name": "parseCallback: error with no message",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "abc12345",
+     "status": "error"
+    }
+   ],
+   "expected": {
+    "kind": "error",
+    "id": "abc12345",
+    "message": ""
+   }
+  },
+  {
+   "name": "parseCallback: missing id",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "status": "success",
+     "result": "x"
+    }
+   ],
+   "expected": {
+    "kind": "invalid",
+    "reason": "The callback has no valid request id."
+   }
+  },
+  {
+   "name": "parseCallback: id too short",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "abc",
+     "status": "success"
+    }
+   ],
+   "expected": {
+    "kind": "invalid",
+    "reason": "The callback has no valid request id."
+   }
+  },
+  {
+   "name": "parseCallback: id with a path is refused",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "../../etc/passwd",
+     "status": "success"
+    }
+   ],
+   "expected": {
+    "kind": "invalid",
+    "reason": "The callback has no valid request id."
+   }
+  },
+  {
+   "name": "parseCallback: id in capitals is refused",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "ABCDEFGH12",
+     "status": "success"
+    }
+   ],
+   "expected": {
+    "kind": "invalid",
+    "reason": "The callback has no valid request id."
+   }
+  },
+  {
+   "name": "parseCallback: unknown status",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "abc12345",
+     "status": "maybe"
+    }
+   ],
+   "expected": {
+    "kind": "invalid",
+    "reason": "The callback status is not success, cancel or error."
+   }
+  },
+  {
+   "name": "parseCallback: missing status",
+   "fn": "parseCallback",
+   "args": [
+    {
+     "id": "abc12345",
+     "result": "x"
+    }
+   ],
+   "expected": {
+    "kind": "invalid",
+    "reason": "The callback status is not success, cancel or error."
+   }
+  },
+  {
+   "name": "idFromBytes: zeros",
+   "fn": "idFromBytes",
+   "args": [
+    [
+     0,
+     0,
+     0,
+     0
+    ]
+   ],
+   "expected": "0000"
+  },
+  {
+   "name": "idFromBytes: wraps at 36",
+   "fn": "idFromBytes",
+   "args": [
+    [
+     0,
+     9,
+     10,
+     35,
+     36,
+     71,
+     255
+    ]
+   ],
+   "expected": "09az0z3"
+  },
+  {
+   "name": "idFromBytes: sixteen bytes make sixteen valid characters",
+   "fn": "idFromBytes",
+   "args": [
+    [
+     200,
+     201,
+     202,
+     203,
+     204,
+     205,
+     206,
+     207,
+     208,
+     209,
+     210,
+     211,
+     212,
+     213,
+     214,
+     215
+    ]
+   ],
+   "expected": "klmnopqrstuvwxyz"
+  },
+  {
+   "name": "addPending: adds to an empty list",
+   "fn": "addPending",
+   "args": [
+    [],
+    {
+     "id": "aaaaaaaa",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 1000
+    },
+    1000
+   ],
+   "expected": [
+    {
+     "id": "aaaaaaaa",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 1000
+    }
+   ]
+  },
+  {
+   "name": "addPending: keeps fresh and drops expired",
+   "fn": "addPending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 0
+     },
+     {
+      "id": "bbbbbbbb",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 1800000
+     }
+    ],
+    {
+     "id": "cccccccc",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 1800001
+    },
+    1800001
+   ],
+   "expected": [
+    {
+     "id": "bbbbbbbb",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 1800000
+    },
+    {
+     "id": "cccccccc",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 1800001
+    }
+   ]
+  },
+  {
+   "name": "addPending: same id replaces",
+   "fn": "addPending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "append",
+      "shortcut": "Summarise",
+      "created": 5
+     }
+    ],
+    {
+     "id": "aaaaaaaa",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 9
+    },
+    10
+   ],
+   "expected": [
+    {
+     "id": "aaaaaaaa",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 9
+    }
+   ]
+  },
+  {
+   "name": "addPending: keeps the newest 20",
+   "fn": "addPending",
+   "args": [
+    [
+     {
+      "id": "id000000",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 100
+     },
+     {
+      "id": "id000001",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 101
+     },
+     {
+      "id": "id000002",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 102
+     },
+     {
+      "id": "id000003",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 103
+     },
+     {
+      "id": "id000004",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 104
+     },
+     {
+      "id": "id000005",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 105
+     },
+     {
+      "id": "id000006",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 106
+     },
+     {
+      "id": "id000007",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 107
+     },
+     {
+      "id": "id000008",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 108
+     },
+     {
+      "id": "id000009",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 109
+     },
+     {
+      "id": "id000010",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 110
+     },
+     {
+      "id": "id000011",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 111
+     },
+     {
+      "id": "id000012",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 112
+     },
+     {
+      "id": "id000013",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 113
+     },
+     {
+      "id": "id000014",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 114
+     },
+     {
+      "id": "id000015",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 115
+     },
+     {
+      "id": "id000016",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 116
+     },
+     {
+      "id": "id000017",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 117
+     },
+     {
+      "id": "id000018",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 118
+     },
+     {
+      "id": "id000019",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 119
+     }
+    ],
+    {
+     "id": "idnewest",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 500
+    },
+    500
+   ],
+   "expected": [
+    {
+     "id": "id000001",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 101
+    },
+    {
+     "id": "id000002",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 102
+    },
+    {
+     "id": "id000003",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 103
+    },
+    {
+     "id": "id000004",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 104
+    },
+    {
+     "id": "id000005",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 105
+    },
+    {
+     "id": "id000006",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 106
+    },
+    {
+     "id": "id000007",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 107
+    },
+    {
+     "id": "id000008",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 108
+    },
+    {
+     "id": "id000009",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 109
+    },
+    {
+     "id": "id000010",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 110
+    },
+    {
+     "id": "id000011",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 111
+    },
+    {
+     "id": "id000012",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 112
+    },
+    {
+     "id": "id000013",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 113
+    },
+    {
+     "id": "id000014",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 114
+    },
+    {
+     "id": "id000015",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 115
+    },
+    {
+     "id": "id000016",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 116
+    },
+    {
+     "id": "id000017",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 117
+    },
+    {
+     "id": "id000018",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 118
+    },
+    {
+     "id": "id000019",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 119
+    },
+    {
+     "id": "idnewest",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 500
+    }
+   ]
+  },
+  {
+   "name": "takePending: found and fresh",
+   "fn": "takePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 100
+     },
+     {
+      "id": "bbbbbbbb",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 200
+     }
+    ],
+    "aaaaaaaa",
+    300
+   ],
+   "expected": {
+    "entry": {
+     "id": "aaaaaaaa",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 100
+    },
+    "rest": [
+     {
+      "id": "bbbbbbbb",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 200
+     }
+    ],
+    "expired": false
+   }
+  },
+  {
+   "name": "takePending: exactly at the time limit still works",
+   "fn": "takePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 100
+     }
+    ],
+    "aaaaaaaa",
+    1800100
+   ],
+   "expected": {
+    "entry": {
+     "id": "aaaaaaaa",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 100
+    },
+    "rest": [],
+    "expired": false
+   }
+  },
+  {
+   "name": "takePending: one ms after the limit is expired and removed",
+   "fn": "takePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 100
+     }
+    ],
+    "aaaaaaaa",
+    1800101
+   ],
+   "expected": {
+    "entry": null,
+    "rest": [],
+    "expired": true
+   }
+  },
+  {
+   "name": "takePending: unknown id",
+   "fn": "takePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 100
+     }
+    ],
+    "zzzzzzzz",
+    200
+   ],
+   "expected": {
+    "entry": null,
+    "rest": [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 100
+     }
+    ],
+    "expired": false
+   }
+  },
+  {
+   "name": "takePending: clock went backwards counts as expired",
+   "fn": "takePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 1000
+     }
+    ],
+    "aaaaaaaa",
+    500
+   ],
+   "expected": {
+    "entry": null,
+    "rest": [],
+    "expired": true
+   }
+  },
+  {
+   "name": "takePending: also drops other expired entries",
+   "fn": "takePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 0
+     },
+     {
+      "id": "bbbbbbbb",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 1800010
+     }
+    ],
+    "bbbbbbbb",
+    1800020
+   ],
+   "expected": {
+    "entry": {
+     "id": "bbbbbbbb",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 1800010
+    },
+    "rest": [],
+    "expired": false
+   }
+  },
+  {
+   "name": "normalizePending: not a list",
+   "fn": "normalizePending",
+   "args": [
+    {
+     "a": 1
+    }
+   ],
+   "expected": []
+  },
+  {
+   "name": "normalizePending: keeps good entries and drops bad ones",
+   "fn": "normalizePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 1
+     },
+     {
+      "id": "x"
+     },
+     {
+      "id": "BAD id",
+      "path": "Notes/a.md",
+      "output": "cursor",
+      "shortcut": "Summarise",
+      "created": 2
+     },
+     {
+      "id": "bbbbbbbb",
+      "path": "Notes/a.md",
+      "output": "none",
+      "shortcut": "Summarise",
+      "created": 3
+     },
+     {
+      "id": "cccccccc",
+      "path": "Notes/a.md",
+      "output": "property:note",
+      "shortcut": "Summarise",
+      "created": 4
+     },
+     {
+      "id": "dddddddd",
+      "path": "Notes/a.md",
+      "output": "weird",
+      "shortcut": "Summarise",
+      "created": 5
+     },
+     null,
+     "str"
+    ]
+   ],
+   "expected": [
+    {
+     "id": "aaaaaaaa",
+     "path": "Notes/a.md",
+     "output": "cursor",
+     "shortcut": "Summarise",
+     "created": 1
+    },
+    {
+     "id": "cccccccc",
+     "path": "Notes/a.md",
+     "output": "property:note",
+     "shortcut": "Summarise",
+     "created": 4
+    }
+   ]
+  },
+  {
+   "name": "appendText: empty note",
+   "fn": "appendText",
+   "args": [
+    "",
+    "out"
+   ],
+   "expected": "out\n"
+  },
+  {
+   "name": "appendText: note ends with a newline",
+   "fn": "appendText",
+   "args": [
+    "a\n",
+    "out"
+   ],
+   "expected": "a\nout\n"
+  },
+  {
+   "name": "appendText: note without final newline",
+   "fn": "appendText",
+   "args": [
+    "a",
+    "out"
+   ],
+   "expected": "a\nout\n"
+  },
+  {
+   "name": "appendText: result ends with newlines",
+   "fn": "appendText",
+   "args": [
+    "a\n",
+    "out\n\n"
+   ],
+   "expected": "a\nout\n"
+  },
+  {
+   "name": "appendText: multi line result",
+   "fn": "appendText",
+   "args": [
+    "a\n",
+    "x\ny"
+   ],
+   "expected": "a\nx\ny\n"
+  },
+  {
+   "name": "commandIds: simple",
+   "fn": "commandIds",
+   "args": [
+    [
+     {
+      "name": "Summarise",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "name": "Add to Reminders",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     }
+    ]
+   ],
+   "expected": [
+    "fav-summarise",
+    "fav-add-to-reminders"
+   ]
+  },
+  {
+   "name": "commandIds: duplicates get a number",
+   "fn": "commandIds",
+   "args": [
+    [
+     {
+      "name": "Tag",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "name": "tag",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "name": "TAG!",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     }
+    ]
+   ],
+   "expected": [
+    "fav-tag",
+    "fav-tag-2",
+    "fav-tag-3"
+   ]
+  },
+  {
+   "name": "commandIds: name with no letters or digits",
+   "fn": "commandIds",
+   "args": [
+    [
+     {
+      "name": "!!!",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "name": "???",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     }
+    ]
+   ],
+   "expected": [
+    "fav-shortcut",
+    "fav-shortcut-2"
+   ]
+  },
+  {
+   "name": "commandIds: long name is cut at 40",
+   "fn": "commandIds",
+   "args": [
+    [
+     {
+      "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     }
+    ]
+   ],
+   "expected": [
+    "fav-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   ]
+  },
+  {
+   "name": "commandIds: order does not change a name's id",
+   "fn": "commandIds",
+   "args": [
+    [
+     {
+      "name": "B",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     },
+     {
+      "name": "A",
+      "input": "selection",
+      "output": "none",
+      "label": ""
+     }
+    ]
+   ],
+   "expected": [
+    "fav-b",
+    "fav-a"
+   ]
+  },
+  {
+   "name": "platformSupport: iPhone",
+   "fn": "platformSupport",
+   "args": [
+    {
+     "isIosApp": true,
+     "isAndroidApp": false,
+     "isDesktopApp": false,
+     "isMacOS": true,
+     "isWin": false,
+     "isLinux": false,
+     "isTablet": false
+    }
+   ],
+   "expected": {
+    "ok": true,
+    "label": "iOS",
+    "message": ""
+   }
+  },
+  {
+   "name": "platformSupport: iPad",
+   "fn": "platformSupport",
+   "args": [
+    {
+     "isIosApp": true,
+     "isAndroidApp": false,
+     "isDesktopApp": false,
+     "isMacOS": true,
+     "isWin": false,
+     "isLinux": false,
+     "isTablet": true
+    }
+   ],
+   "expected": {
+    "ok": true,
+    "label": "iPadOS",
+    "message": ""
+   }
+  },
+  {
+   "name": "platformSupport: Mac",
+   "fn": "platformSupport",
+   "args": [
+    {
+     "isIosApp": false,
+     "isAndroidApp": false,
+     "isDesktopApp": true,
+     "isMacOS": true,
+     "isWin": false,
+     "isLinux": false,
+     "isTablet": false
+    }
+   ],
+   "expected": {
+    "ok": true,
+    "label": "macOS",
+    "message": ""
+   }
+  },
+  {
+   "name": "platformSupport: Windows",
+   "fn": "platformSupport",
+   "args": [
+    {
+     "isIosApp": false,
+     "isAndroidApp": false,
+     "isDesktopApp": true,
+     "isMacOS": false,
+     "isWin": true,
+     "isLinux": false,
+     "isTablet": false
+    }
+   ],
+   "expected": {
+    "ok": false,
+    "label": "Windows",
+    "message": "Apple Shortcuts does not exist on Windows. Shortcuts Bridge runs on iPhone, iPad and Mac only."
+   }
+  },
+  {
+   "name": "platformSupport: Linux",
+   "fn": "platformSupport",
+   "args": [
+    {
+     "isIosApp": false,
+     "isAndroidApp": false,
+     "isDesktopApp": true,
+     "isMacOS": false,
+     "isWin": false,
+     "isLinux": true,
+     "isTablet": false
+    }
+   ],
+   "expected": {
+    "ok": false,
+    "label": "Linux",
+    "message": "Apple Shortcuts does not exist on Linux. Shortcuts Bridge runs on iPhone, iPad and Mac only."
+   }
+  },
+  {
+   "name": "platformSupport: Android phone",
+   "fn": "platformSupport",
+   "args": [
+    {
+     "isIosApp": false,
+     "isAndroidApp": true,
+     "isDesktopApp": false,
+     "isMacOS": false,
+     "isWin": false,
+     "isLinux": false,
+     "isTablet": false
+    }
+   ],
+   "expected": {
+    "ok": false,
+    "label": "Android",
+    "message": "Apple Shortcuts does not exist on Android. Shortcuts Bridge runs on iPhone, iPad and Mac only."
+   }
+  },
+  {
+   "name": "platformSupport: Android tablet",
+   "fn": "platformSupport",
+   "args": [
+    {
+     "isIosApp": false,
+     "isAndroidApp": true,
+     "isDesktopApp": false,
+     "isMacOS": false,
+     "isWin": false,
+     "isLinux": false,
+     "isTablet": true
+    }
+   ],
+   "expected": {
+    "ok": false,
+    "label": "Android",
+    "message": "Apple Shortcuts does not exist on Android. Shortcuts Bridge runs on iPhone, iPad and Mac only."
+   }
+  },
+  {
+   "name": "platformSupport: unknown",
+   "fn": "platformSupport",
+   "args": [
+    {
+     "isIosApp": false,
+     "isAndroidApp": false,
+     "isDesktopApp": false,
+     "isMacOS": false,
+     "isWin": false,
+     "isLinux": false,
+     "isTablet": false
+    }
+   ],
+   "expected": {
+    "ok": false,
+    "label": "this device",
+    "message": "Apple Shortcuts does not exist on this device. Shortcuts Bridge runs on iPhone, iPad and Mac only."
+   }
+  }
+ ]
+}

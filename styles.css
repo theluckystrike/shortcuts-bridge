@@ -1,0 +1,24 @@
+/* Styles for Shortcuts Bridge. Obsidian loads this file while the plugin is enabled. */
+.shortcuts-bridge-block {
+	margin: var(--size-4-2) 0;
+}
+
+.shortcuts-bridge-button {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-4-2);
+}
+
+.shortcuts-bridge-icon {
+	display: inline-flex;
+}
+
+.shortcuts-bridge-pro,
+.shortcuts-bridge-problem {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.shortcuts-bridge-problem {
+	color: var(--text-error);
+}
