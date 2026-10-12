@@ -27,13 +27,6 @@ export function insertAtCursor(editor: Editor, text: string, replaceSelection: b
 	editor.setCursor(editor.offsetToPos(start + text.length));
 }
 
-async function openEditor(app: App, file: TFile): Promise<Editor | null> {
-	const open = editorForPath(app, file.path);
-	if (open) return open;
-	await app.workspace.getLeaf(false).openFile(file);
-	return editorForPath(app, file.path);
-}
-
 /** Replaces the line that held the cursor. A note that is open is changed through its editor, so Undo works. */
 async function replaceLine(app: App, file: TFile, entry: Pending, result: string): Promise<string> {
 	const line = entry.line ?? 0;
@@ -64,7 +57,9 @@ async function replaceLine(app: App, file: TFile, entry: Pending, result: string
 
 /**
  * Writes the output of a shortcut where the request said. Returns a short text for the notice.
- * Cursor and replace need an editor. When the note has none, the text goes to the end of the note.
+ * Cursor and replace need an editor. When the note has none, the text goes to the end of the note. The note is not
+ * opened for this: a note that opens has its cursor at the start, above the front matter, and it takes the place of
+ * the note in the active tab.
  */
 export async function applyResult(app: App, entry: Pending, result: string): Promise<string> {
 	const file = app.vault.getAbstractFileByPath(entry.path);
@@ -78,11 +73,13 @@ export async function applyResult(app: App, entry: Pending, result: string): Pro
 	}
 	if (entry.output === 'replace-line') return replaceLine(app, file, entry, result);
 	if (entry.output === 'cursor' || entry.output === 'replace') {
-		const editor = await openEditor(app, file);
+		const editor = editorForPath(app, file.path);
 		if (editor) {
 			insertAtCursor(editor, result, entry.output === 'replace');
 			return `Inserted the output of "${entry.shortcut}".`;
 		}
+		await app.vault.process(file, (data) => appendText(data, result));
+		return `The note was not open, so the output of "${entry.shortcut}" was added at the end of the note.`;
 	}
 	await app.vault.process(file, (data) => appendText(data, result));
 	return `Added the output of "${entry.shortcut}" at the end of the note.`;

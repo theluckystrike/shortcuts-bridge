@@ -1,5 +1,11 @@
 # shortcuts-bridge
 
+## 1.1.1
+
+### Patch Changes
+
+- 25ba727: The cursor and replace outputs add the text at the end of a note that is not open, and no longer open it and write above its front matter.
+
 ## 1.1.0
 
 ### Minor Changes

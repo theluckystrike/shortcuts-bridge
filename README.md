@@ -1,6 +1,6 @@
 # Shortcuts Bridge
 
-Runs an Apple Shortcut from a note or a command and passes text to it. Works on iPhone, iPad and Mac.
+Runs an Apple Shortcut from a note or a command and passes text to it. For iPhone, iPad and Mac.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/shortcuts-bridge/HEAD/docs/shortcuts-bridge.gif" alt="Favourites in the settings, the shortcut picker, the output of a shortcut inserted below a paragraph, and a code block button" width="720">
 
@@ -22,19 +22,19 @@ The input is one of these: selection, line, note, title, path, clipboard or none
 
 ### Favourites as commands
 
-Each line in the settings is a favourite, and each favourite is a command in the command palette. You can give it a hotkey. The command ids come from the shortcut name, so a hotkey stays when you change the order of the list.
+Each line in the settings is a favourite, and each favourite is a command in the command palette. You can give it a hotkey. The command id comes from the letters a to z and the digits of the name, so a hotkey stays when you reorder the list. Names that share those characters, or have none, get ids in list order.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/shortcuts-bridge/HEAD/docs/favourites.png" alt="The settings with the list of favourite shortcuts, the platform line and the folder rules" width="720">
 
 ### A clear notice on other platforms
 
-On Windows, Android and Linux, every run stops before it sends anything.
+On Windows, Android and Linux, a run stops before it sends anything.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/shortcuts-bridge/HEAD/docs/windows-notice.png" alt="A notice that says Apple Shortcuts does not exist on Windows" width="720">
 
 ### Output at the cursor, over the selection or at the end (Pro)
 
-Add an output to a favourite: `cursor`, `replace` or `append`. Shortcuts Bridge then uses the x-callback-url form of the link, with `x-success`, `x-cancel` and `x-error` links that open `obsidian://shortcuts-bridge`. Shortcuts adds the output to the success link. `cursor` inserts the text at the cursor. `replace` writes over the selection when the selection is still there, and inserts at the cursor when it is not. `append` adds the text on a new line at the end of the note.
+Add an output to a favourite: `cursor`, `replace` or `append`. The link then uses the x-callback-url form, and Shortcuts sends the output back to `obsidian://shortcuts-bridge`. `cursor` inserts the text at the cursor. `replace` writes over the selection when the selection is still there, and inserts at the cursor when it is not. `append` adds the text on a new line at the end of the note. When the note is not open in a tab, `cursor` and `replace` also add the text at the end.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/shortcuts-bridge/HEAD/docs/result-cursor.png" alt="A summary inserted below the selected paragraph, with the notice Inserted the output of Summarise" width="720">
 
@@ -68,14 +68,14 @@ Without Pro, the block shows one line that says the button is a Pro feature.
 
 When Shortcuts Bridge is listed in the community directory, open Settings, then Community plugins, then Browse, and search for "Shortcuts Bridge". Select Install, then Enable.
 
-To install by hand, download `main.js`, `manifest.json` and `styles.css` from the latest release. Put the three files in `<vault>/.obsidian/plugins/shortcuts-bridge/`. Restart Obsidian or reload the list of community plugins, then turn on Shortcuts Bridge.
+To install by hand, download `main.js`, `manifest.json` and `styles.css` from the latest release. Put the three files in `<vault>/.obsidian/plugins/shortcuts-bridge/`. Restart Obsidian, then turn on Shortcuts Bridge.
 
-You need the Shortcuts app and at least one shortcut. Shortcuts Bridge cannot list your shortcuts, because the Shortcuts link scheme has no call for that. Type each name exactly as it shows in the Shortcuts app.
+You need the Shortcuts app and at least one shortcut. The link scheme has no call to list your shortcuts, so type each name exactly as it shows in the Shortcuts app.
 
 ## Usage
 
 1. Open Settings, then Shortcuts Bridge. Write one favourite on each line: `Name | input | output | command name`. Only the name is needed.
-2. Open a note and select some text.
+2. Select some text in a note.
 3. Open the command palette and run your favourite, or run "Run a shortcut" and pick it.
 4. The Shortcuts app opens and runs the shortcut with your text.
 5. With Pro and an output on the favourite, the output comes back and goes where the favourite says.
@@ -114,7 +114,7 @@ A callback works only with the random 16 character id of a request that this plu
 
 ### How is this different from other plugins?
 
-The Actions URI plugin works the other way: Shortcuts calls Obsidian. The Shell commands plugin can run the `shortcuts` tool on a Mac, but iPhone and iPad have no shell. Shortcuts Bridge uses the link scheme, so it runs on all three. It shares no code with any other plugin.
+The Actions URI plugin works the other way: Shortcuts calls Obsidian. The Shell commands plugin needs a shell, which iPhone and iPad do not have. Shortcuts Bridge uses the link scheme, which exists on iPhone, iPad and Mac. It shares no code with any other plugin.
 
 ### Does it work in the background?
 
