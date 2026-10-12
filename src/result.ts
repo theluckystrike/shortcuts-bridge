@@ -1,5 +1,5 @@
 import { MarkdownView, TFile, type App, type Editor } from 'obsidian';
-import { appendText, type Pending } from './shortcut';
+import { appendText, replaceLineText, type Pending } from './shortcut';
 
 /** The editor of a note that is open in a tab, or null. The active editor is tried first. */
 export function editorForPath(app: App, path: string): Editor | null {
@@ -34,6 +34,34 @@ async function openEditor(app: App, file: TFile): Promise<Editor | null> {
 	return editorForPath(app, file.path);
 }
 
+/** Replaces the line that held the cursor. A note that is open is changed through its editor, so Undo works. */
+async function replaceLine(app: App, file: TFile, entry: Pending, result: string): Promise<string> {
+	const line = entry.line ?? 0;
+	const expected = entry.lineText ?? '';
+	const editor = editorForPath(app, file.path);
+	const r = replaceLineText(editor ? editor.getValue() : await app.vault.read(file), line, expected, result);
+	if (!r.ok) {
+		if (r.reason === 'empty') throw new Error(`The output of "${entry.shortcut}" is empty, so the line was not changed.`);
+		await app.vault.process(file, (data) => appendText(data, result));
+		return `The line changed while "${entry.shortcut}" ran, so it was not replaced. Added the output at the end of the note.`;
+	}
+	if (editor) {
+		editor.replaceRange(r.text, { line: r.line, ch: 0 }, { line: r.line, ch: editor.getLine(r.line).length });
+		const parts = r.text.split('\n');
+		editor.setCursor({ line: r.line + parts.length - 1, ch: (parts[parts.length - 1] ?? '').length });
+	} else {
+		// The note can change between the read and the write. Then the output goes to the end, as for a moved line.
+		let replaced = false;
+		await app.vault.process(file, (data) => {
+			const again = replaceLineText(data, line, expected, result);
+			replaced = again.ok;
+			return again.ok ? again.doc : appendText(data, result);
+		});
+		if (!replaced) return `The line changed while "${entry.shortcut}" ran, so it was not replaced. Added the output at the end of the note.`;
+	}
+	return `Replaced the line with the output of "${entry.shortcut}".`;
+}
+
 /**
  * Writes the output of a shortcut where the request said. Returns a short text for the notice.
  * Cursor and replace need an editor. When the note has none, the text goes to the end of the note.
@@ -48,6 +76,7 @@ export async function applyResult(app: App, entry: Pending, result: string): Pro
 		});
 		return `Saved the output of "${entry.shortcut}" in the property ${key}.`;
 	}
+	if (entry.output === 'replace-line') return replaceLine(app, file, entry, result);
 	if (entry.output === 'cursor' || entry.output === 'replace') {
 		const editor = await openEditor(app, file);
 		if (editor) {

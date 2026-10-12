@@ -823,7 +823,7 @@
    "expected": {
     "items": [],
     "problems": [
-     "Line 1: unknown output \"clipboard\". Use none, cursor, replace, append or property:<name>."
+     "Line 1: unknown output \"clipboard\". Use none, cursor, replace, replace-line, append or property:<name>."
     ]
    }
   },
@@ -836,7 +836,7 @@
    "expected": {
     "items": [],
     "problems": [
-     "Line 1: unknown output \"property:\". Use none, cursor, replace, append or property:<name>."
+     "Line 1: unknown output \"property:\". Use none, cursor, replace, replace-line, append or property:<name>."
     ]
    }
   },
@@ -1414,7 +1414,7 @@
    ],
    "expected": {
     "ok": false,
-    "error": "Unknown output \"clipboard\". Use none, cursor, replace, append or property:<name>."
+    "error": "Unknown output \"clipboard\". Use none, cursor, replace, replace-line, append or property:<name>."
    }
   },
   {
@@ -2675,6 +2675,431 @@
     "ok": false,
     "label": "this device",
     "message": "Apple Shortcuts does not exist on this device. Shortcuts Bridge runs on iPhone, iPad and Mac only."
+   }
+  },
+  {
+   "name": "parseFavourites: replace-line output",
+   "fn": "parseFavourites",
+   "args": [
+    "Quote | line | replace-line"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "Quote",
+      "input": "line",
+      "output": "replace-line",
+      "label": ""
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFavourites: replace line with a space and capitals",
+   "fn": "parseFavourites",
+   "args": [
+    "Quote | line | Replace Line | Quote line"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "Quote",
+      "input": "line",
+      "output": "replace-line",
+      "label": "Quote line"
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseFavourites: replace-lines is a problem",
+   "fn": "parseFavourites",
+   "args": [
+    "Quote | line | replace-lines"
+   ],
+   "expected": {
+    "items": [],
+    "problems": [
+     "Line 1: unknown output \"replace-lines\". Use none, cursor, replace, replace-line, append or property:<name>."
+    ]
+   }
+  },
+  {
+   "name": "parseFolderRules: replace-line output",
+   "fn": "parseFolderRules",
+   "args": [
+    "Journal | Tidy | line | replace-line"
+   ],
+   "expected": {
+    "items": [
+     {
+      "name": "Tidy",
+      "input": "line",
+      "output": "replace-line",
+      "label": "",
+      "folder": "Journal"
+     }
+    ],
+    "problems": []
+   }
+  },
+  {
+   "name": "parseBlock: replace-line is refused because a button has no cursor line",
+   "fn": "parseBlock",
+   "args": [
+    "Tag it\noutput: replace-line"
+   ],
+   "expected": {
+    "ok": false,
+    "error": "A button has no cursor line. Use output: none, cursor, replace, append or property:<name>."
+   }
+  },
+  {
+   "name": "normalizePending: replace-line keeps its line number and text",
+   "fn": "normalizePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "a.md",
+      "output": "replace-line",
+      "shortcut": "Quote",
+      "created": 1,
+      "line": 3,
+      "lineText": "- item"
+     }
+    ]
+   ],
+   "expected": [
+    {
+     "id": "aaaaaaaa",
+     "path": "a.md",
+     "output": "replace-line",
+     "shortcut": "Quote",
+     "created": 1,
+     "line": 3,
+     "lineText": "- item"
+    }
+   ]
+  },
+  {
+   "name": "normalizePending: replace-line without a line is dropped",
+   "fn": "normalizePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "a.md",
+      "output": "replace-line",
+      "shortcut": "Quote",
+      "created": 1
+     },
+     {
+      "id": "bbbbbbbb",
+      "path": "a.md",
+      "output": "replace-line",
+      "shortcut": "Quote",
+      "created": 1,
+      "line": -1,
+      "lineText": "x"
+     },
+     {
+      "id": "cccccccc",
+      "path": "a.md",
+      "output": "replace-line",
+      "shortcut": "Quote",
+      "created": 1,
+      "line": 1.5,
+      "lineText": "x"
+     },
+     {
+      "id": "dddddddd",
+      "path": "a.md",
+      "output": "replace-line",
+      "shortcut": "Quote",
+      "created": 1,
+      "line": 0
+     }
+    ]
+   ],
+   "expected": []
+  },
+  {
+   "name": "normalizePending: line fields are dropped from other outputs",
+   "fn": "normalizePending",
+   "args": [
+    [
+     {
+      "id": "aaaaaaaa",
+      "path": "a.md",
+      "output": "cursor",
+      "shortcut": "Quote",
+      "created": 1,
+      "line": 3,
+      "lineText": "x"
+     }
+    ]
+   ],
+   "expected": [
+    {
+     "id": "aaaaaaaa",
+     "path": "a.md",
+     "output": "cursor",
+     "shortcut": "Quote",
+     "created": 1
+    }
+   ]
+  },
+  {
+   "name": "replaceLineText: middle line",
+   "fn": "replaceLineText",
+   "args": [
+    "a\nb\nc",
+    1,
+    "b",
+    "B"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "a\nB\nc",
+    "line": 1,
+    "text": "B"
+   }
+  },
+  {
+   "name": "replaceLineText: first line",
+   "fn": "replaceLineText",
+   "args": [
+    "b\nc",
+    0,
+    "b",
+    "B"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "B\nc",
+    "line": 0,
+    "text": "B"
+   }
+  },
+  {
+   "name": "replaceLineText: last line without a final newline",
+   "fn": "replaceLineText",
+   "args": [
+    "a\nb",
+    1,
+    "b",
+    "B"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "a\nB",
+    "line": 1,
+    "text": "B"
+   }
+  },
+  {
+   "name": "replaceLineText: output with several lines",
+   "fn": "replaceLineText",
+   "args": [
+    "a\nb\nc",
+    1,
+    "b",
+    "x\ny"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "a\nx\ny\nc",
+    "line": 1,
+    "text": "x\ny"
+   }
+  },
+  {
+   "name": "replaceLineText: line breaks around the output are dropped",
+   "fn": "replaceLineText",
+   "args": [
+    "a\nb\nc",
+    1,
+    "b",
+    "\n\nB\n\n"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "a\nB\nc",
+    "line": 1,
+    "text": "B"
+   }
+  },
+  {
+   "name": "replaceLineText: indentation of the output stays",
+   "fn": "replaceLineText",
+   "args": [
+    "a\nb",
+    1,
+    "b",
+    "  - B"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "a\n  - B",
+    "line": 1,
+    "text": "  - B"
+   }
+  },
+  {
+   "name": "replaceLineText: windows line breaks in the output",
+   "fn": "replaceLineText",
+   "args": [
+    "a\nb\nc",
+    1,
+    "b",
+    "x\r\ny"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "a\nx\ny\nc",
+    "line": 1,
+    "text": "x\ny"
+   }
+  },
+  {
+   "name": "replaceLineText: empty output changes nothing",
+   "fn": "replaceLineText",
+   "args": [
+    "a\nb\nc",
+    1,
+    "b",
+    "\n \n"
+   ],
+   "expected": {
+    "ok": false,
+    "reason": "empty"
+   }
+  },
+  {
+   "name": "replaceLineText: a line was added above, the text is found again",
+   "fn": "replaceLineText",
+   "args": [
+    "new\na\nb\nc",
+    1,
+    "b",
+    "B"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "new\na\nB\nc",
+    "line": 2,
+    "text": "B"
+   }
+  },
+  {
+   "name": "replaceLineText: the line number is past the end, the text is found again",
+   "fn": "replaceLineText",
+   "args": [
+    "a\nb",
+    9,
+    "b",
+    "B"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "a\nB",
+    "line": 1,
+    "text": "B"
+   }
+  },
+  {
+   "name": "replaceLineText: the line was deleted",
+   "fn": "replaceLineText",
+   "args": [
+    "a\nc",
+    1,
+    "b",
+    "B"
+   ],
+   "expected": {
+    "ok": false,
+    "reason": "moved"
+   }
+  },
+  {
+   "name": "replaceLineText: the text is on two other lines",
+   "fn": "replaceLineText",
+   "args": [
+    "b\nx\nb",
+    1,
+    "b",
+    "B"
+   ],
+   "expected": {
+    "ok": false,
+    "reason": "moved"
+   }
+  },
+  {
+   "name": "replaceLineText: the line number wins when the text is on two lines",
+   "fn": "replaceLineText",
+   "args": [
+    "b\nb",
+    1,
+    "b",
+    "B"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "b\nB",
+    "line": 1,
+    "text": "B"
+   }
+  },
+  {
+   "name": "replaceLineText: empty line by number",
+   "fn": "replaceLineText",
+   "args": [
+    "a\n\nc",
+    1,
+    "",
+    "B"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "a\nB\nc",
+    "line": 1,
+    "text": "B"
+   }
+  },
+  {
+   "name": "replaceLineText: file with windows line breaks",
+   "fn": "replaceLineText",
+   "args": [
+    "a\r\nb\r\nc",
+    1,
+    "b",
+    "x\ny"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "a\r\nx\r\ny\r\nc",
+    "line": 1,
+    "text": "x\ny"
+   }
+  },
+  {
+   "name": "replaceLineText: task list line",
+   "fn": "replaceLineText",
+   "args": [
+    "# T\n- [ ] call Ana\n- [ ] ship",
+    1,
+    "- [ ] call Ana",
+    "- [x] call Ana"
+   ],
+   "expected": {
+    "ok": true,
+    "doc": "# T\n- [x] call Ana\n- [ ] ship",
+    "line": 1,
+    "text": "- [x] call Ana"
    }
   }
  ]

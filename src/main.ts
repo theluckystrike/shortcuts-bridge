@@ -1,4 +1,4 @@
-import { Notice, Platform, Plugin, type Editor, type ObsidianProtocolData, type TFile } from 'obsidian';
+import { MarkdownView, Notice, Platform, Plugin, type Editor, type ObsidianProtocolData, type TFile } from 'obsidian';
 import type { SponsorsManager } from './license/index';
 import { createGitHubSponsors } from './license/github-obsidian';
 import { ShortcutButton } from './block';
@@ -26,6 +26,7 @@ import {
 	type Favourite,
 	type InputContext,
 	type InputSource,
+	type Pending,
 	type PlatformFlags,
 } from './shortcut';
 
@@ -167,11 +168,22 @@ export default class ShortcutsBridgePlugin extends Plugin {
 			new Notice('Open a note first: the output needs a note to go to.');
 			return null;
 		}
-		const id = idFromBytes(crypto.getRandomValues(new Uint8Array(16)));
-		this.settings.pending = addPending(this.settings.pending, { id, path: ctx.file.path, output: fav.output, shortcut: fav.name, created: Date.now() }, Date.now());
+		const entry: Pending = { id: idFromBytes(crypto.getRandomValues(new Uint8Array(16))), path: ctx.file.path, output: fav.output, shortcut: fav.name, created: Date.now() };
+		if (fav.output === 'replace-line') {
+			// The line is the one with the cursor now. Its text is saved so that the plugin can find it again after edits.
+			const editor = ctx.editor;
+			if (!editor) return this.stop('Replace line needs the note open in editing mode, with the cursor on the line.');
+			// Reading mode keeps an editor with a cursor that the user cannot see. That line would be a guess.
+			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (view && view.editor === editor && view.getMode() === 'preview') return this.stop('Replace line needs the note open in editing mode, with the cursor on the line.');
+			if (editor.getCursor('from').line !== editor.getCursor('to').line) return this.stop('Replace line works on one line. Select text on one line only, or select nothing.');
+			entry.line = editor.getCursor().line;
+			entry.lineText = editor.getLine(entry.line);
+		}
+		this.settings.pending = addPending(this.settings.pending, entry, Date.now());
 		// Saved before the shortcut starts: on iPhone the app can be closed while the shortcut runs.
 		await this.saveSettings();
-		return callbackUrls(this.app.vault.getName(), id);
+		return callbackUrls(this.app.vault.getName(), entry.id);
 	}
 
 	private stop(message: string): null {

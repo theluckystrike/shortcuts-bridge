@@ -5,7 +5,7 @@
 
 export const INPUT_SOURCES = ['selection', 'line', 'note', 'title', 'path', 'clipboard', 'none'] as const;
 export type InputSource = (typeof INPUT_SOURCES)[number];
-export type Output = 'none' | 'cursor' | 'replace' | 'append' | `property:${string}`;
+export type Output = 'none' | 'cursor' | 'replace' | 'replace-line' | 'append' | `property:${string}`;
 
 export interface Favourite {
 	name: string;
@@ -126,6 +126,7 @@ export function parseOutput(word: string): Output | null {
 	if (w === '' || w.toLowerCase() === 'none') return 'none';
 	const lower = w.toLowerCase();
 	if (lower === 'cursor' || lower === 'replace' || lower === 'append') return lower;
+	if (/^replace[\s-]+line$/.test(lower)) return 'replace-line';
 	const m = /^property\s*:\s*(.+)$/i.exec(w);
 	if (m && m[1] !== undefined) {
 		const key = m[1].trim();
@@ -153,7 +154,7 @@ function parseFields(parts: string[], where: string, problems: string[]): Favour
 	const input = parseInputWord(parts[1] ?? '', 'selection');
 	if (input === null) return fail(problems, `${where}: unknown input "${(parts[1] ?? '').trim()}". Use ${INPUT_SOURCES.join(', ')}.`);
 	const output = parseOutput(parts[2] ?? '');
-	if (output === null) return fail(problems, `${where}: unknown output "${(parts[2] ?? '').trim()}". Use none, cursor, replace, append or property:<name>.`);
+	if (output === null) return fail(problems, `${where}: unknown output "${(parts[2] ?? '').trim()}". Use none, cursor, replace, replace-line, append or property:<name>.`);
 	return { name, input, output, label: (parts[3] ?? '').trim() };
 }
 
@@ -238,7 +239,8 @@ export function parseBlock(source: string): { ok: true; favourite: Favourite } |
 	if (input === null) return { ok: false, error: `Unknown input "${inputWord}". Use note, title, path, clipboard or none.` };
 	if (input === 'selection' || input === 'line') return { ok: false, error: 'A button has no selection. Use input: note, title, path, clipboard or none.' };
 	const output = parseOutput(outputWord);
-	if (output === null) return { ok: false, error: `Unknown output "${outputWord}". Use none, cursor, replace, append or property:<name>.` };
+	if (output === null) return { ok: false, error: `Unknown output "${outputWord}". Use none, cursor, replace, replace-line, append or property:<name>.` };
+	if (output === 'replace-line') return { ok: false, error: 'A button has no cursor line. Use output: none, cursor, replace, append or property:<name>.' };
 	return { ok: true, favourite: { ...f, input, output } };
 }
 
@@ -278,6 +280,9 @@ export interface Pending {
 	output: Output;
 	shortcut: string;
 	created: number;
+	/** replace-line only: the line number (from 0) of the cursor and the text of that line when the shortcut started. */
+	line?: number;
+	lineText?: string;
 }
 
 /** Keeps only well formed entries from saved data. */
@@ -288,7 +293,13 @@ export function normalizePending(raw: unknown): Pending[] {
 		if (!r || typeof r.id !== 'string' || !ID_PATTERN.test(r.id) || typeof r.path !== 'string' || typeof r.shortcut !== 'string' || typeof r.created !== 'number') continue;
 		const output = parseOutput(typeof r.output === 'string' ? r.output : '');
 		if (output === null || output === 'none') continue;
-		out.push({ id: r.id, path: r.path, output, shortcut: r.shortcut, created: r.created });
+		const entry: Pending = { id: r.id, path: r.path, output, shortcut: r.shortcut, created: r.created };
+		if (output === 'replace-line') {
+			if (typeof r.line !== 'number' || !Number.isInteger(r.line) || r.line < 0 || typeof r.lineText !== 'string') continue;
+			entry.line = r.line;
+			entry.lineText = r.lineText;
+		}
+		out.push(entry);
 	}
 	return out.slice(-PENDING_MAX);
 }
@@ -321,6 +332,31 @@ export function appendText(doc: string, text: string): string {
 	const body = text.replace(/\n+$/, '');
 	if (doc === '') return body + '\n';
 	return doc + (doc.endsWith('\n') ? '' : '\n') + body + '\n';
+}
+
+export type LineReplace = { ok: true; doc: string; line: number; text: string } | { ok: false; reason: 'empty' | 'moved' };
+
+/**
+ * Puts the output in place of one line of a note. The line is found by its number when the text still matches.
+ * If the note changed while the shortcut ran, the one line with the same text is used. With none or two such lines
+ * the answer is `moved` and nothing is replaced. Leading and trailing line breaks of the output are dropped.
+ */
+export function replaceLineText(doc: string, line: number, expected: string, output: string): LineReplace {
+	const text = output.replace(/\r\n?/g, '\n').replace(/^\n+|\n+$/g, '');
+	if (text.trim() === '') return { ok: false, reason: 'empty' };
+	const lines = doc.split('\n');
+	const want = expected.replace(/\r$/, '');
+	const same = (i: number): boolean => (lines[i] ?? '').replace(/\r$/, '') === want;
+	let at = line >= 0 && line < lines.length && same(line) ? line : -1;
+	if (at < 0) {
+		const hits = lines.map((_, i) => i).filter(same);
+		if (hits.length !== 1) return { ok: false, reason: 'moved' };
+		at = hits[0] ?? -1;
+	}
+	const cr = (lines[at] ?? '').endsWith('\r');
+	const parts = text.split('\n');
+	lines[at] = parts.map((p, i) => (cr && i < parts.length - 1 ? p + '\r' : p)).join('\n') + (cr ? '\r' : '');
+	return { ok: true, doc: lines.join('\n'), line: at, text };
 }
 
 /** Command id part for a favourite. Ids stay the same when the list is reordered. */
@@ -389,6 +425,7 @@ const run: Record<string, (a: unknown[]) => unknown> = {
 	takePending: (a) => takePending(...(a as unknown as [Pending[], string, number])),
 	normalizePending: (a) => normalizePending(...(a as [unknown])),
 	appendText: (a) => appendText(...(a as [string, string])),
+	replaceLineText: (a) => replaceLineText(...(a as [string, number, string, string])),
 	commandIds: (a) => commandIds(...(a as unknown as [Favourite[]])),
 	platformSupport: (a) => platformSupport(...(a as [PlatformFlags])),
 };

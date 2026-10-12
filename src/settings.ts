@@ -73,7 +73,7 @@ export class ShortcutsBridgeSettingTab extends PluginSettingTab {
 			{
 				name: 'Favourite shortcuts',
 				desc:
-					'One favourite per line: Shortcut name | input | output | command name. Only the name is needed. Input is selection, line, note, title, path, clipboard or none (default selection). Output is none, cursor, replace, append or property:<name> (default none). ' +
+					'One favourite per line: Shortcut name | input | output | command name. Only the name is needed. Input is selection, line, note, title, path, clipboard or none (default selection). Output is none, cursor, replace, replace-line, append or property:<name> (default none). ' +
 					`Each line becomes a command. ${favs.items.length} favourites now.` +
 					(problems.length > 0 ? ` Problems: ${problems.join(' ')}` : ''),
 				control: { type: 'textarea', key: 'favourites', defaultValue: DEFAULT_SETTINGS.favourites, rows: 6, placeholder: 'Summarise | selection | cursor\nSave to Reminders | title\nTranslate | note | property:translation | Translate this note' },

@@ -14,7 +14,7 @@ How far this was tested: the links that the plugin builds, and the way it handle
 
 ### Run a shortcut with your text
 
-Run the command "Run a shortcut". Pick a favourite, or type the name of any shortcut and press Enter. The list shows the input and the output of each favourite.
+Run the command "Run a shortcut". Pick a favourite, or type the name of any shortcut and press Enter.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/shortcuts-bridge/HEAD/docs/picker.png" alt="The Run a shortcut list with four favourites" width="720">
 
@@ -34,7 +34,7 @@ On Windows, Android and Linux, every run stops before it sends anything.
 
 ### Output at the cursor, over the selection or at the end (Pro)
 
-Add an output to a favourite: `cursor`, `replace` or `append`. Shortcuts Bridge then uses the x-callback-url form of the link. It adds `x-success`, `x-cancel` and `x-error` links that open `obsidian://shortcuts-bridge`. Shortcuts adds the output to the success link, and Obsidian passes it to the plugin. `cursor` inserts the text at the cursor. `replace` writes over the selection when the selection is still there, and inserts at the cursor when it is not. `append` adds the text on a new line at the end of the note.
+Add an output to a favourite: `cursor`, `replace` or `append`. Shortcuts Bridge then uses the x-callback-url form of the link, with `x-success`, `x-cancel` and `x-error` links that open `obsidian://shortcuts-bridge`. Shortcuts adds the output to the success link. `cursor` inserts the text at the cursor. `replace` writes over the selection when the selection is still there, and inserts at the cursor when it is not. `append` adds the text on a new line at the end of the note.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/shortcuts-bridge/HEAD/docs/result-cursor.png" alt="A summary inserted below the selected paragraph, with the notice Inserted the output of Summarise" width="720">
 
@@ -43,6 +43,12 @@ Add an output to a favourite: `cursor`, `replace` or `append`. Shortcuts Bridge 
 Use `property:summary` as the output to save the trimmed text in the property `summary` of the note that you started from.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/shortcuts-bridge/HEAD/docs/result-property.png" alt="A note with a new property named filed" width="720">
+
+### Replace the line with the output (Pro)
+
+Use `replace-line` as the output to replace the whole line that holds the cursor. The plugin saves the line number and the text of the line before the shortcut starts. If lines move while the shortcut runs, it finds the line again by its text. If it finds no line or more than one, it adds the output at the end of the note and shows a notice. An output of blanks changes nothing. The note must be open in editing mode, a selection must stay on one line, and a button cannot use it.
+
+<img src="https://raw.githubusercontent.com/theluckystrike/shortcuts-bridge/HEAD/docs/result-replace-line.png" alt="A task line that the output of a shortcut replaced, with the notice Replaced the line with the output of Tidy task" width="720">
 
 ### A default shortcut for each folder (Pro)
 
@@ -81,6 +87,7 @@ Summarise | selection | cursor
 File this note | note | property:filed
 Save to Reminders | title
 Translate | selection | replace | Translate selection
+Tidy task | line | replace-line
 ```
 
 A line that starts with `#` is a comment. A line with a problem shows in the settings and as a notice, with its line number. The other lines still work.
@@ -105,13 +112,9 @@ Before the shortcut starts, the plugin saves the request in its `data.json`. A r
 
 A callback works only with the random 16 character id of a request that this plugin made. An unknown id, an id that was used, and an id older than 30 minutes write nothing and show a notice. These cases were tested.
 
-### Why must I type the names?
-
-Shortcuts has no public call to list shortcuts for another app. The plugin does not guess them.
-
 ### How is this different from other plugins?
 
-The Actions URI plugin works the other way: Shortcuts calls Obsidian. The Shell commands plugin can start the `shortcuts` command line tool on a Mac, but iPhone and iPad have no shell. Shortcuts Bridge uses the link scheme, so it runs on all three. It is a new plugin and shares no code with any other.
+The Actions URI plugin works the other way: Shortcuts calls Obsidian. The Shell commands plugin can run the `shortcuts` tool on a Mac, but iPhone and iPad have no shell. Shortcuts Bridge uses the link scheme, so it runs on all three. It shares no code with any other plugin.
 
 ### Does it work in the background?
 
