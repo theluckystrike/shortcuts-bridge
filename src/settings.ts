@@ -3,6 +3,7 @@ import { sponsorsSettingItems } from './license/github-obsidian';
 import { PRO_UI, isPro } from './pro';
 import { INPUT_SOURCES, normalizePending, parseFavourites, parseFolderRules, platformSupport, type InputSource, type Pending } from './shortcut';
 import type ShortcutsBridgePlugin from './main';
+import { helloSettingItems } from './hello/settings';
 
 export interface ShortcutsBridgeSettings {
 	/** One favourite per line: Name | input | output | label. */
@@ -60,6 +61,11 @@ export class ShortcutsBridgeSettingTab extends PluginSettingTab {
 	}
 
 	getSettingDefinitions(): SettingDefinitionItem[] {
+		// The product rows, then the "More from NoteMods" card (packages/hello).
+		return [...this.productSettingDefinitions(), ...helloSettingItems()];
+	}
+
+	productSettingDefinitions(): SettingDefinitionItem[] {
 		const platform = platformSupport(this.plugin.platform());
 		const favs = parseFavourites(this.plugin.settings.favourites);
 		const rules = parseFolderRules(this.plugin.settings.folderRules);

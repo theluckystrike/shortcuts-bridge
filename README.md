@@ -6,8 +6,6 @@ Runs an Apple Shortcut from a note or a command and passes text to it. For iPhon
 
 Shortcuts Bridge starts a shortcut from the Shortcuts app with the text that you choose: the selection, the current line, the whole note, the title or the path. You give the name of the shortcut and Shortcuts Bridge builds the `shortcuts://` link and opens it. With Pro, the output of the shortcut comes back to Obsidian and goes into the note.
 
-Apple Shortcuts exists on iOS, iPadOS and macOS only. On Windows, Android and Linux the plugin sends nothing and shows a notice that says so.
-
 How far this was tested: the links that the plugin builds, and the way it handles the answer, were tested in the Obsidian desktop app on a Mac (versions 1.13.4 and 1.14.4) with a stand-in that records the link instead of opening it. The Shortcuts app did not run in those tests. An iPhone and an iPad were not used. The screenshots show a simulated answer, not a real shortcut.
 
 ## Features
@@ -28,7 +26,7 @@ Each line in the settings is a favourite, and each favourite is a command in the
 
 ### A clear notice on other platforms
 
-On Windows, Android and Linux, a run stops before it sends anything.
+On Windows, Android and Linux, a run stops before it sends anything and shows a notice.
 
 <img src="https://raw.githubusercontent.com/theluckystrike/shortcuts-bridge/HEAD/docs/windows-notice.png" alt="A notice that says Apple Shortcuts does not exist on Windows" width="720">
 
@@ -66,7 +64,7 @@ Without Pro, the block shows one line that says the button is a Pro feature.
 
 ## Install
 
-When Shortcuts Bridge is listed in the community directory, open Settings, then Community plugins, then Browse, and search for "Shortcuts Bridge". Select Install, then Enable.
+Open Settings, then Community plugins, then Browse, and search for "Shortcuts Bridge". Select Install, then Enable.
 
 To install by hand, download `main.js`, `manifest.json` and `styles.css` from the latest release. Put the three files in `<vault>/.obsidian/plugins/shortcuts-bridge/`. Restart Obsidian, then turn on Shortcuts Bridge.
 
@@ -76,9 +74,8 @@ You need the Shortcuts app and at least one shortcut. The link scheme has no cal
 
 1. Open Settings, then Shortcuts Bridge. Write one favourite on each line: `Name | input | output | command name`. Only the name is needed.
 2. Select some text in a note.
-3. Open the command palette and run your favourite, or run "Run a shortcut" and pick it.
+3. Open the command palette and run your favourite.
 4. The Shortcuts app opens and runs the shortcut with your text.
-5. With Pro and an output on the favourite, the output comes back and goes where the favourite says.
 
 Examples of lines:
 
@@ -93,6 +90,8 @@ Tidy task | line | replace-line
 A line that starts with `#` is a comment. A line with a problem shows in the settings and as a notice, with its line number. The other lines still work.
 
 ## Settings
+
+After a minor or major update, this plugin opens one What's new tab in the background. The tab and settings card suggest other NoteMods plugins and Zovo Chat and link to notemods.com for feedback ([privacy](https://notemods.com/privacy/)). The tab sends no data. Turn the tab off in Settings.
 
 | Setting | Use |
 |---|---|
@@ -114,7 +113,7 @@ A callback works only with the random 16 character id of a request that this plu
 
 ### How is this different from other plugins?
 
-The Actions URI plugin works the other way: Shortcuts calls Obsidian. The Shell commands plugin needs a shell, which iPhone and iPad do not have. Shortcuts Bridge uses the link scheme, which exists on iPhone, iPad and Mac. It shares no code with any other plugin.
+The Actions URI plugin works the other way: Shortcuts calls Obsidian. The Shell commands plugin needs a shell, which iPhone and iPad do not have. It shares no code with any other plugin.
 
 ### Does it work in the background?
 
@@ -134,7 +133,7 @@ After a successful check, Pro can work offline for up to 14 days. Sign out or a 
 
 ## Support
 
-Report a bug or ask for a feature in the issue tracker of this repository. To support the work, use [GitHub Sponsors](https://github.com/sponsors/theluckystrike).
+Report a bug or ask for a feature in the issue tracker of this repository.
 
 ```
 npm ci

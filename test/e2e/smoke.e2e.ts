@@ -144,9 +144,9 @@ describe(`${pluginId} in the real app`, function () {
 	it('makes one command for each favourite and removes it when the list changes', async function () {
 		await setup({ platform: MAC, favourites: 'Summarise | selection\nAdd to Reminders | title | none | Remind me' });
 		const ids = () => browser.executeObsidian(({ app }) => Object.keys((app as unknown as { commands: { commands: Record<string, unknown> } }).commands.commands).filter((c) => c.startsWith('shortcuts-bridge:')).sort());
-		expect(await ids()).toEqual(['shortcuts-bridge:fav-add-to-reminders', 'shortcuts-bridge:fav-summarise', 'shortcuts-bridge:run-folder-default', 'shortcuts-bridge:run-shortcut']);
+		expect(await ids()).toEqual(['shortcuts-bridge:fav-add-to-reminders', 'shortcuts-bridge:fav-summarise', 'shortcuts-bridge:run-folder-default', 'shortcuts-bridge:run-shortcut', 'shortcuts-bridge:send-feedback', 'shortcuts-bridge:show-whats-new']);
 		await setup({ platform: MAC, favourites: 'Summarise | selection' });
-		expect(await ids()).toEqual(['shortcuts-bridge:fav-summarise', 'shortcuts-bridge:run-folder-default', 'shortcuts-bridge:run-shortcut']);
+		expect(await ids()).toEqual(['shortcuts-bridge:fav-summarise', 'shortcuts-bridge:run-folder-default', 'shortcuts-bridge:run-shortcut', 'shortcuts-bridge:send-feedback', 'shortcuts-bridge:show-whats-new']);
 	});
 
 	it('sends the selection: exact URL with RFC 3986 encoding', async function () {
