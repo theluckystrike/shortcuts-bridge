@@ -1,16 +1,9 @@
 {
 	"id": "shortcuts-bridge",
 	"name": "Shortcuts Bridge",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"changes": [
-		"New Send feedback command. It opens a page where you can report a problem or suggest an idea.",
-		"The cursor and replace outputs add the text at the end of a note that is not open.",
-		"Adds the Pro output replace-line, which puts the output of a shortcut in place of the cursor line."
-	],
-	"changes_user": [
-		"New Send feedback command. It opens a page where you can report a problem or suggest an idea.",
-		"The cursor and replace outputs now add text at the end of a note that is not open, instead of opening it.",
-		"Pro has a new replace-line output that puts the result of a shortcut in place of the cursor line."
+		"The Shortcuts Bridge notice for a Pro feature now has a Sponsor on GitHub button."
 	],
 	"tip": "The selection input sends the current line when nothing is selected.",
 	"thanks": "Hi, I am Michael, a solo developer in Poland. Shortcuts Bridge is one of over 100 small plugins that I make. Thank you for keeping it in your editor.",

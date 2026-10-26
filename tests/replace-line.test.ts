@@ -75,7 +75,7 @@ describe('output replace-line, the request', () => {
 	});
 
 	function pro(on: boolean): void {
-		bindPro({ isPro: () => on, onChange: () => () => undefined } as never);
+		bindPro({ isPro: () => on, onChange: () => () => undefined, getState: () => ({ status: 'signed-out', lastAttemptAt: 0 }), hasToken: () => false, config: { sponsorLogin: 'theluckystrike' } } as never);
 	}
 
 	it('saves the cursor line number and its text, then opens the link', async () => {

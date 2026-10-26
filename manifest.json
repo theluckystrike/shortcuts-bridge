@@ -1,7 +1,7 @@
 {
 	"id": "shortcuts-bridge",
 	"name": "Shortcuts Bridge",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"minAppVersion": "1.13.4",
 	"description": "Runs an Apple Shortcut from a note or a command and passes text to it. For iPhone, iPad and Mac.",
 	"author": "Michael Lip",

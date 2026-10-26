@@ -1,5 +1,5 @@
 import { MarkdownRenderChild, setIcon } from 'obsidian';
-import { isPro, onProChange } from './pro';
+import { isPro, onProChange, proText } from './pro';
 import { parseBlock, type Favourite } from './shortcut';
 
 /** Draws a ```shortcut block: a button that runs the shortcut with the note as input. Pro only. */
@@ -29,7 +29,7 @@ export class ShortcutButton extends MarkdownRenderChild {
 		}
 		const f = parsed.favourite;
 		if (!isPro()) {
-			el.createDiv({ cls: 'shortcuts-bridge-pro', text: `Shortcut button "${f.name}" is a pro feature. Sponsor on GitHub, then sign in from the plugin settings.` });
+			el.createDiv({ cls: 'shortcuts-bridge-pro', text: proText(`Shortcut button "${f.name}" is a pro feature.`) });
 			return;
 		}
 		const button = el.createEl('button', { cls: 'mod-cta shortcuts-bridge-button' });

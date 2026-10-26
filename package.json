@@ -1,7 +1,6 @@
 {
 	"name": "shortcuts-bridge",
-	"repository": {"type": "git", "url": "theluckystrike/shortcuts-bridge.git"},
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"private": true,
 	"description": "Runs an Apple Shortcut from a note or a command and passes text to it. For iPhone, iPad and Mac.",
 	"main": "main.js",

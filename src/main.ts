@@ -3,7 +3,7 @@ import type { SponsorsManager } from './license/index';
 import { createGitHubSponsors } from './license/github-obsidian';
 import { ShortcutButton } from './block';
 import { ShortcutPicker } from './picker';
-import { SPONSORS, bindPro, isPro, resetPro } from './pro';
+import { SPONSORS, bindPro, isPro, resetPro, proNotice as sharedProNotice } from './pro';
 import { applyResult } from './result';
 import { DEFAULT_SETTINGS, ShortcutsBridgeSettingTab, normalizeSettings, type ShortcutsBridgeSettings } from './settings';
 import {
@@ -38,7 +38,7 @@ const NEEDS_FILE = new Set<InputSource>(['note', 'title', 'path']);
 
 /** The message for a Pro feature that is off. The word pro is lower case because the sentence case lint wants that. */
 function proNotice(feature: string): void {
-	new Notice(`${feature} is a pro feature. Sponsor on GitHub, then sign in from the plugin settings.`);
+	sharedProNotice(`${feature} is a pro feature.`);
 }
 
 export interface RunContext {
