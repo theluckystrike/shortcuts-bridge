@@ -113,7 +113,7 @@ A callback works only with the random 16 character id of a request that this plu
 
 ### How is this different from other plugins?
 
-The Actions URI plugin works the other way: Shortcuts calls Obsidian. The Shell commands plugin needs a shell, which iPhone and iPad do not have. It shares no code with any other plugin.
+The Actions URI plugin works the other way: Shortcuts calls Obsidian. The Shell commands plugin needs a shell, which iPhone and iPad do not have.
 
 ### Does it work in the background?
 
@@ -122,6 +122,8 @@ The link scheme opens the Shortcuts app. Expect that app to come to the front. T
 ## Payment, account and network
 
 The core features are free. Pro features need a GitHub Sponsors sponsorship of theluckystrike: $5 a month or more, or $15 once. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply. Your notes stay readable and editable with or without Pro.
+
+[One payment turns on Pro in every NoteMods plugin](https://notemods.com/pro/).
 
 GitHub handles the payment. Sponsor at https://github.com/sponsors/theluckystrike?frequency=one-time&metadata_source=shortcuts-bridge. You need no account for the free features. Pro needs the GitHub account that sponsors.
 
