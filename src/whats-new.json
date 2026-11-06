@@ -1,8 +1,9 @@
 {
 	"id": "shortcuts-bridge",
 	"name": "Shortcuts Bridge",
-	"version": "1.2.1",
+	"version": "1.2.2",
 	"changes": [
+		"The Pro notice of Shortcuts Bridge now says that one payment turns on Pro in every NoteMods plugin.",
 		"The Shortcuts Bridge notice for a Pro feature now has a Sponsor on GitHub button."
 	],
 	"tip": "The selection input sends the current line when nothing is selected.",
