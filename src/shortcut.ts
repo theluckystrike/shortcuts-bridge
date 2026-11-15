@@ -30,11 +30,24 @@ export const PENDING_MAX = 20;
 
 // ---------------------------------------------------------------- URL building
 
-const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+/** Replaces each lone surrogate code unit with U+FFFD: a high one not before a low one, a low one not after a high one. */
+export function replaceLoneSurrogates(text: string): string {
+	let out = '';
+	for (let i = 0; i < text.length; i++) {
+		const c = text.charCodeAt(i);
+		const high = c >= 0xd800 && c <= 0xdbff;
+		const low = c >= 0xdc00 && c <= 0xdfff;
+		const next = i + 1 < text.length ? text.charCodeAt(i + 1) : -1;
+		const prev = i > 0 ? text.charCodeAt(i - 1) : -1;
+		if ((high && !(next >= 0xdc00 && next <= 0xdfff)) || (low && !(prev >= 0xd800 && prev <= 0xdbff))) out += '\uFFFD';
+		else out += text[i];
+	}
+	return out;
+}
 
 /** Percent-encodes one query value as RFC 3986 says: only A-Z a-z 0-9 - . _ ~ stay. Line breaks become \n. */
 export function encodeParam(value: string): string {
-	const clean = value.replace(/\r\n?/g, '\n').replace(LONE_SURROGATE, '�');
+	const clean = replaceLoneSurrogates(value.replace(/\r\n?/g, '\n'));
 	return encodeURIComponent(clean).replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase());
 }
 
